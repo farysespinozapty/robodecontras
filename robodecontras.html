@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>🔐 PassGuard - Simulador de Robo de Contraseñas</title>
+    <style>
+        /* ==================== ESTILOS GLOBALES ==================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Roboto+Mono:wght@400;600&display=swap');
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0e17;
+            color: #e0e6ed;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            background-image: radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0e17 70%);
+        }
+
+        /* ==================== CONTENEDOR PRINCIPAL ==================== */
+        #app {
+            width: 100%;
+            max-width: 480px;
+            background: #111927;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 80px rgba(0, 255, 157, 0.03);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ==================== HEADER ==================== */
+        #header {
+            background: linear-gradient(135deg, #0d1b2a, #1a2a3a);
+            padding: 16px 20px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        #header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #ff6b6b, #ff0055);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .logo-text {
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: -0.5px;
+        }
+        .logo-text .highlight {
+            color: #ff6b6b;
+        }
+
+        .btn-reset {
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
+            color: #8a9ba8;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        .btn-reset:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+        }
+
+        /* Stats */
+        #stats-row {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .stat-chip {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .stat-chip .icon {
+            font-size: 0.8rem;
+        }
+        .stat-chip .value {
+            color: #fff;
+            font-weight: 600;
+            min-width: 16px;
+        }
+        .stat-chip .value.green {
+            color: #00ff9d;
+        }
+        .stat-chip .value.red {
+            color: #ff6b6b;
+        }
+        .stat-chip .value.gold {
+            color: #ffd93d;
+        }
+        .stat-chip .value.blue {
+            color: #4a9eff;
+        }
+
+        /* ==================== ÁREA DE JUEGO ==================== */
+        #game-area {
+            padding: 20px;
+            min-height: 440px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* ==================== ESCENARIO ==================== */
+        #scenario {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        #scenario .scenario-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        #scenario .scenario-title {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #8a9ba8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        #scenario .scenario-number {
+            font-size: 0.75rem;
+            color: #4a5a6a;
+            font-weight: 500;
+        }
+
+        /* Tarjeta del escenario */
+        .scenario-card {
+            background: #0d1824;
+            border-radius: 16px;
+            padding: 18px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            min-height: 160px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scenario-card .context-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .scenario-card .context-text {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #c8d6e0;
+        }
+
+        .scenario-card .context-text .highlight-danger {
+            background: rgba(255, 107, 107, 0.15);
+            padding: 1px 6px;
+            border-radius: 3px;
+            border-left: 2px solid #ff6b6b;
+            color: #ff6b6b;
+        }
+
+        .scenario-card .context-text .highlight-safe {
+            background: rgba(0, 255, 157, 0.08);
+            padding: 1px 6px;
+            border-radius: 3px;
+            border-left: 2px solid #00ff9d;
+            color: #00ff9d;
+        }
+
+        .scenario-card .context-text .highlight-warning {
+            background: rgba(255, 217, 61, 0.1);
+            padding: 1px 6px;
+            border-radius: 3px;
+            border-left: 2px solid #ffd93d;
+            color: #ffd93d;
+        }
+
+        /* ==================== OPCIONES DE RESPUESTA ==================== */
+        #options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .option-btn {
+            padding: 14px 12px;
+            border: 2px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            color: #e0e6ed;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            line-height: 1.3;
+            min-height: 64px;
+            justify-content: center;
+        }
+
+        .option-btn .option-icon {
+            font-size: 20px;
+        }
+        .option-btn .option-label {
+            font-size: 0.7rem;
+            color: #8a9ba8;
+            font-weight: 400;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.12);
+            transform: scale(1.02);
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .option-btn.correct {
+            border-color: #00ff9d;
+            background: rgba(0, 255, 157, 0.1);
+            box-shadow: 0 0 30px rgba(0, 255, 157, 0.1);
+        }
+
+        .option-btn.wrong {
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+            box-shadow: 0 0 30px rgba(255, 107, 107, 0.1);
+        }
+
+        .option-btn.reveal {
+            border-color: rgba(255, 217, 61, 0.3);
+            background: rgba(255, 217, 61, 0.05);
+        }
+
+        /* ==================== FEEDBACK ==================== */
+        #feedback-area {
+            margin-top: 14px;
+            padding: 14px 16px;
+            border-radius: 12px;
+            min-height: 60px;
+            display: none;
+            animation: slideUp 0.3s ease;
+        }
+
+        #feedback-area.visible {
+            display: block;
+        }
+
+        #feedback-area.success {
+            background: rgba(0, 255, 157, 0.06);
+            border: 1px solid rgba(0, 255, 157, 0.15);
+        }
+
+        #feedback-area.error {
+            background: rgba(255, 107, 107, 0.06);
+            border: 1px solid rgba(255, 107, 107, 0.15);
+        }
+
+        #feedback-area.info {
+            background: rgba(255, 217, 61, 0.06);
+            border: 1px solid rgba(255, 217, 61, 0.15);
+        }
+
+        #feedback-area .fb-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+
+        #feedback-area .fb-title .icon {
+            margin-right: 6px;
+        }
+
+        #feedback-area .fb-body {
+            font-size: 0.85rem;
+            color: #8a9ba8;
+            line-height: 1.5;
+        }
+
+        #feedback-area .fb-body strong {
+            color: #e0e6ed;
+        }
+
+        #feedback-area .fb-body .tip {
+            display: block;
+            margin-top: 6px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            border-left: 3px solid #ffd93d;
+            font-size: 0.8rem;
+            color: #ffd93d;
+        }
+
+        /* ==================== BOTÓN SIGUIENTE ==================== */
+        #next-btn {
+            margin-top: 12px;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: #00ff9d;
+            color: #0a0e17;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            display: none;
+        }
+
+        #next-btn:hover {
+            background: #00cc7d;
+            transform: scale(1.02);
+            box-shadow: 0 0 30px rgba(0, 255, 157, 0.15);
+        }
+
+        #next-btn.visible {
+            display: block;
+        }
+
+        /* ==================== MODAL ==================== */
+        #modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(12px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.4s ease;
+            padding: 20px;
+        }
+
+        #modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #modal-content {
+            background: #111927;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 32px 28px;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+        }
+
+        #modal-content .result-icon {
+            font-size: 56px;
+            margin-bottom: 8px;
+        }
+
+        #modal-content h2 {
+            font-size: 1.6rem;
+            margin-bottom: 4px;
+            color: #fff;
+        }
+
+        #modal-content .subtitle {
+            color: #8a9ba8;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+
+        #modal-content .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin: 16px 0 24px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            padding: 12px 8px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .stat-card .label {
+            font-size: 0.65rem;
+            color: #5a7a8a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-card .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .stat-card .value.green {
+            color: #00ff9d;
+        }
+        .stat-card .value.red {
+            color: #ff6b6b;
+        }
+        .stat-card .value.gold {
+            color: #ffd93d;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: #00ff9d;
+            color: #0a0e17;
+        }
+        .btn-primary:hover {
+            background: #00cc7d;
+            transform: scale(1.02);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.06);
+            color: #8a9ba8;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+        }
+
+        /* ==================== RESPONSIVE ==================== */
+        @media (max-width: 420px) {
+            body {
+                padding: 8px;
+            }
+            #header {
+                padding: 12px 14px 10px;
+            }
+            .logo-text {
+                font-size: 0.95rem;
+            }
+            .stat-chip {
+                font-size: 0.6rem;
+                padding: 3px 6px;
+            }
+            #game-area {
+                padding: 14px;
+                min-height: 380px;
+            }
+            .scenario-card {
+                padding: 14px 16px;
+                min-height: 130px;
+            }
+            .scenario-card .context-text {
+                font-size: 0.9rem;
+            }
+            #options {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            .option-btn {
+                padding: 10px 8px;
+                font-size: 0.75rem;
+                min-height: 52px;
+            }
+            #feedback-area {
+                padding: 10px 12px;
+                min-height: 50px;
+            }
+            #modal-content {
+                padding: 24px 18px;
+            }
+            #modal-content .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 360px) {
+            #options {
+                grid-template-columns: 1fr;
+            }
+            .option-btn {
+                min-height: 44px;
+                flex-direction: row;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== APP ==================== -->
+    <div id="app">
+
+        <!-- HEADER -->
+        <div id="header">
+            <div id="header-top">
+                <div class="logo">
+                    <div class="logo-icon">🔐</div>
+                    <div class="logo-text"><span class="highlight">Pass</span>Guard</div>
+                </div>
+                <button class="btn-reset" onclick="resetGame()">🔄 Reiniciar</button>
+            </div>
+            <div id="stats-row">
+                <div class="stat-chip">
+                    <span class="icon">📝</span>
+                    <span>Escenario</span>
+                    <span class="value" id="scenario-counter">1/10</span>
+                </div>
+                <div class="stat-chip">
+                    <span class="icon">✅</span>
+                    <span>Aciertos</span>
+                    <span class="value green" id="correct-count">0</span>
+                </div>
+                <div class="stat-chip">
+                    <span class="icon">❌</span>
+                    <span>Fallos</span>
+                    <span class="value red" id="wrong-count">0</span>
+                </div>
+                <div class="stat-chip">
+                    <span class="icon">⭐</span>
+                    <span>Puntos</span>
+                    <span class="value gold" id="score-display">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- GAME AREA -->
+        <div id="game-area">
+            <div id="scenario">
+                <div class="scenario-header">
+                    <span class="scenario-title" id="scenario-title">🔍 Escenario</span>
+                    <span class="scenario-number" id="scenario-number">1/10</span>
+                </div>
+                <div class="scenario-card" id="scenario-card">
+                    <div class="context-icon" id="context-icon">🖥️</div>
+                    <div class="context-text" id="context-text">
+                        Cargando escenario...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Opciones -->
+            <div id="options">
+                <button class="option-btn" data-option="0" onclick="selectOption(0)">
+                    <span class="option-icon">🛡️</span>
+                    Opción A
+                    <span class="option-label">Seguro</span>
+                </button>
+                <button class="option-btn" data-option="1" onclick="selectOption(1)">
+                    <span class="option-icon">⚠️</span>
+                    Opción B
+                    <span class="option-label">Riesgo</span>
+                </button>
+                <button class="option-btn" data-option="2" onclick="selectOption(2)">
+                    <span class="option-icon">🔒</span>
+                    Opción C
+                    <span class="option-label">Seguro</span>
+                </button>
+                <button class="option-btn" data-option="3" onclick="selectOption(3)">
+                    <span class="option-icon">🚨</span>
+                    Opción D
+                    <span class="option-label">Riesgo</span>
+                </button>
+            </div>
+
+            <!-- Feedback -->
+            <div id="feedback-area">
+                <div class="fb-title"><span class="icon">💡</span> <span id="fb-title-text">Feedback</span></div>
+                <div class="fb-body" id="fb-body-text"></div>
+            </div>
+
+            <!-- Botón siguiente -->
+            <button id="next-btn" onclick="nextScenario()">➡️ Siguiente escenario</button>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL ==================== -->
+    <div id="modal-overlay">
+        <div id="modal-content">
+            <div class="result-icon" id="modal-icon">🏆</div>
+            <h2 id="modal-title">¡Excelente trabajo!</h2>
+            <p class="subtitle" id="modal-subtitle">Has completado todos los escenarios</p>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="label">Aciertos</div>
+                    <div class="value green" id="modal-correct">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Fallos</div>
+                    <div class="value red" id="modal-wrong">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Puntuación</div>
+                    <div class="value gold" id="modal-score">0</div>
+                </div>
+            </div>
+            <div class="stat-card" style="margin-bottom:20px;padding:8px;">
+                <div class="label">Nivel de seguridad</div>
+                <div class="value" id="modal-grade" style="font-size:1.2rem;color:#ffd93d;">🟡 Intermedio</div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="resetGame()">🔄 Jugar de nuevo</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== JAVASCRIPT ==================== -->
+    <script>
+        // ================================================================
+        //  PASSGUARD - SIMULADOR DE ROBO DE CONTRASEÑAS
+        //  Aprende a identificar técnicas de robo de credenciales
+        // ================================================================
+
+        // ==================== BASE DE DATOS DE ESCENARIOS ====================
+        const SCENARIOS = [{
+            id: 1,
+            title: 'Phishing por Correo',
+            icon: '📧',
+            context: `Recibes un correo de "Soporte de Microsoft" que dice:
+
+            <span class="highlight-danger">"Su cuenta ha sido comprometida. Haga clic aquí para verificar su identidad y cambiar su contraseña."</span>
+
+            El enlace lleva a: <span class="highlight-danger">microsoft-verificacion.com</span>`,
+            options: [
+                { label: 'Hacer clic en el enlace y cambiar la contraseña', safe: false },
+                { label: 'Verificar el dominio y reportar como phishing', safe: true },
+                { label: 'Responder al correo pidiendo más información', safe: false },
+                { label: 'Reenviar el correo a un compañero para que lo revise', safe: false }
+            ],
+            explanation: '✅ ¡Correcto! El dominio "microsoft-verificacion.com" es falso. Microsoft usa "microsoft.com". Nunca hagas clic en enlaces sospechosos.',
+            tip: '💡 Consejo: Siempre verifica el dominio completo del remitente. Los atacantes usan dominios que parecen legítimos pero tienen pequeñas variaciones.'
+        }, {
+            id: 2,
+            title: 'Keylogger',
+            icon: '⌨️',
+            context: `Descargas un programa "gratuito" para editar fotos desde un sitio no oficial.
+
+            Durante la instalación, aparece una ventana que dice:
+            <span class="highlight-warning">"Este software necesita acceso a tu teclado para funciones avanzadas"</span>`,
+            options: [
+                { label: 'Aceptar el permiso para usar el programa', safe: false },
+                { label: 'Cancelar la instalación y buscar el programa oficial', safe: true },
+                { label: 'Ignorar la advertencia y continuar', safe: false },
+                { label: 'Desactivar el antivirus para instalar más rápido', safe: false }
+            ],
+            explanation: '✅ ¡Correcto! Un keylogger registra todo lo que escribes, incluyendo contraseñas. Siempre descarga software de fuentes oficiales.',
+            tip: '💡 Consejo: Nunca instales software de sitios no oficiales. Un keylogger puede robar todas tus contraseñas sin que te des cuenta.'
+        }, {
+            id: 3,
+            title: 'Ingeniería Social - Llamada Telefónica',
+            icon: '📞',
+            context: `Recibes una llamada de "tu banco". La persona dice:
+
+            <span class="highlight-danger">"Hemos detectado un cargo sospechoso en tu tarjeta. Necesito tu número de cuenta y contraseña para verificar tu identidad y cancelar el cargo."</span>`,
+            options: [
+                { label: 'Proporcionar la información para proteger tu cuenta', safe: false },
+                { label: 'Colgar y llamar al número oficial del banco', safe: true },
+                { label: 'Dar solo el número de cuenta, no la contraseña', safe: false },
+                { label: 'Preguntar más detalles antes de dar información', safe: false }
+            ],
+            explanation: '✅ ¡Correcto! Los bancos NUNCA piden contraseñas por teléfono. Siempre cuelga y llama al número oficial que aparece en tu estado de cuenta.',
+            tip: '💡 Consejo: La ingeniería social es una de las formas más efectivas de robar contraseñas. Los atacantes crean situaciones de urgencia para que actúes sin pensar.'
+        }, {
+            id: 4,
+            title: 'Falsas Páginas de Inicio de Sesión',
+            icon: '🌐',
+            context: `Haces clic en un enlace de un resultado de búsqueda que dice:
+
+            <span class="highlight-warning">"Facebook - Iniciar Sesión"</span>
+
+            La página se ve exactamente como Facebook, pero la URL es: <span class="highlight-danger">faceb00k-login.com</span>`,
+            options: [
+                { label: 'Introducir tu usuario y contraseña', safe: false },
+                { label: 'Cerrar la página y acceder desde facebook.com', safe: true },
+                { label: 'Revisar si la página tiene el logo de Facebook', safe: false },
+                { label: 'Intentar recuperar contraseña desde esa página', safe: false }
+            ],
+            explanation: '✅ ¡Correcto! La URL "faceb00k-login.com" es un clon de Facebook. Los atacantes copian exactamente el diseño para engañarte.',
+            tip: '💡 Consejo: Siempre revisa la URL antes de introducir tus credenciales. Los atacantes usan "typosquatting" (dominios con errores ortográficos).'
+        }, {
+            id: 5,
+            title: 'Wi-Fi Falso (Evil Twin)',
+            icon: '📶',
+            context: `Estás en un café y ves dos redes Wi-Fi:
+
+            1. <span class="highlight-safe">"Cafe_WiFi_Oficial"</span> (con candado)
+            2. <span class="highlight-danger">"Cafe_WiFi_Gratis"</span> (sin candado)`,
+            options: [
+                { label: 'Conectarte a "Cafe_WiFi_Gratis" porque es gratis', safe: false },
+                { label: 'Conectarte a "Cafe_WiFi_Oficial" con contraseña', safe: true },
+                { label: 'Preguntar al mesero cuál es la red oficial', safe: true },
+                { label: 'Usar datos móviles en lugar del Wi-Fi', safe: true }
+            ],
+            explanation: '✅ ¡Correcto! Un atacante puede crear una red Wi-Fi falsa (Evil Twin) para interceptar tus datos, incluyendo contraseñas.',
+            tip: '💡 Consejo: Siempre verifica con el establecimiento cuál es su red Wi-Fi oficial. Evita redes abiertas sin contraseña.'
+        }, {
+            id: 6,
+            title: 'Malware en USB',
+            icon: '💾',
+            context: `Encuentras una memoria USB en el estacionamiento de tu oficina. Tiene una etiqueta que dice:
+
+            <span class="highlight-warning">"Confidencial - Recursos Humanos"</span>`,
+            options: [
+                { label: 'Conectarla a tu computadora para ver qué contiene', safe: false },
+                { label: 'Llevarla al departamento de IT para que la revisen', safe: true },
+                { label: 'Dejarla en recepción para que la reclamen', safe: true },
+                { label: 'Formatearla y usarla para tus archivos', safe: false }
+            ],
+            explanation: '✅ ¡Correcto! Las memorias USB encontradas pueden contener malware que roba contraseñas al conectarlas. Nunca conectes dispositivos desconocidos.',
+            tip: '💡 Consejo: El "USB drop attack" es una técnica común. Los atacantes dejan USBs infectados esperando que alguien los conecte por curiosidad.'
+        }, {
+            id: 7,
+            title: 'Phishing por SMS (Smishing)',
+            icon: '📱',
+            context: `Recibes un SMS de "tu banco" que dice:
+
+            <span class="highlight-danger">"ALERTA: Tu cuenta será bloqueada. Confirma tu identidad en: bancoseguro-verificar.com"</span>`,
+            options: [
+                { label: 'Hacer clic en el enlace para evitar el bloqueo', safe: false },
+                { label: 'Eliminar el SMS y no hacer clic', safe: true },
+                { label: 'Responder al SMS pidiendo más información', safe: false },
+                { label: 'Reenviar el SMS a un amigo para que lo vea', safe: false }
+            ],
+            explanation: '✅ ¡Correcto! El smishing (SMS phishing) es muy común. Los bancos nunca envían enlaces para "verificar" por SMS.',
+            tip: '💡 Consejo: Si recibes un SMS sospechoso, NO hagas clic en enlaces. Contacta a la entidad por canales oficiales.'
+        }, {
+            id: 8,
+            title: 'Cambio de Contraseña Falso',
+            icon: '🔄',
+            context: `Te llega un correo de "Soporte Técnico" que dice:
+
+            <span class="highlight-warning">"Tu contraseña expiró. Haz clic aquí para cambiarla: sistema-seguro.com/cambiar"</span>
+
+            El dominio <span class="highlight-danger">sistema-seguro.com</span> NO es el de tu empresa.`,
+            options: [
+                { label: 'Cambiar la contraseña desde el enlace del correo', safe: false },
+                { label: 'Ignorar el correo y cambiarla desde el portal oficial', safe: true },
+                { label: 'Reenviar el correo a tu jefe', safe: false },
+                { label: 'Probar si el enlace funciona antes de cambiar', safe: false }
+            ],
+            explanation: '✅ ¡Correcto! Nunca cambies contraseñas desde enlaces en correos. Siempre ve directamente al sitio oficial.',
+            tip: '💡 Consejo: Los atacantes crean páginas falsas de cambio de contraseña para robar tus credenciales. Siempre escribe la URL manualmente.'
+        }, {
+            id: 9,
+            title: 'Ataque de Fuerza Bruta',
+            icon: '🔓',
+            context: `Tu sistema de seguridad te pide elegir una contraseña. Tus opciones son:
+
+            A) <span class="highlight-danger">"123456"</span>
+            B) <span class="highlight-safe">"P@ssw0rd!2024$"</span>
+            C) <span class="highlight-warning">"contraseña"</span>
+            D) <span class="highlight-danger">"admin"</span>`,
+            options: [
+                { label: 'Usar "123456" (fácil de recordar)', safe: false },
+                { label: 'Usar "P@ssw0rd!2024$" (segura y compleja)', safe: true },
+                { label: 'Usar "contraseña" (la más común)', safe: false },
+                { label: 'Usar "admin" (rápido de escribir)', safe: false }
+            ],
+            explanation: '✅ ¡Correcto! "P@ssw0rd!2024$" es una contraseña segura: tiene mayúsculas, minúsculas, números y caracteres especiales.',
+            tip: '💡 Consejo: Usa contraseñas largas y complejas (mínimo 12 caracteres). Combina mayúsculas, minúsculas, números y símbolos. ¡No uses "123456" ni "contraseña"!'
+        }, {
+            id: 10,
+            title: 'Reutilización de Contraseñas',
+            icon: '♻️',
+            context: `Tienes una cuenta en un sitio que fue hackeado. Usas la <span class="highlight-danger">misma contraseña</span> para tu correo, redes sociales y banco.
+
+            El sitio hackeado publicó las contraseñas en internet.`,
+            options: [
+                { label: 'Cambiar solo la contraseña del sitio hackeado', safe: false },
+                { label: 'Cambiar todas las contraseñas donde usas la misma clave', safe: true },
+                { label: 'No hacer nada porque el hackeo fue "hace mucho"', safe: false },
+                { label: 'Agregar un número al final de la contraseña', safe: false }
+            ],
+            explanation: '✅ ¡Correcto! Si usas la misma contraseña en múltiples sitios, un hackeo en uno compromete TODAS tus cuentas. Cambia todas las contraseñas únicas.',
+            tip: '💡 Consejo: Usa contraseñas diferentes para cada servicio. Considera usar un gestor de contraseñas para administrarlas de forma segura.'
+        }];
+
+        // ==================== ESTADO DEL JUEGO ====================
+        const state = {
+            scenarios: [],
+            currentIndex: 0,
+            correct: 0,
+            wrong: 0,
+            score: 0,
+            totalAnswered: 0,
+            answered: false,
+            gameOver: false,
+            selectedOption: -1,
+        };
+
+        // ==================== DOM REFERENCIAS ====================
+        const scenarioCounter = document.getElementById('scenario-counter');
+        const correctCount = document.getElementById('correct-count');
+        const wrongCount = document.getElementById('wrong-count');
+        const scoreDisplay = document.getElementById('score-display');
+
+        const scenarioTitle = document.getElementById('scenario-title');
+        const scenarioNumber = document.getElementById('scenario-number');
+        const contextIcon = document.getElementById('context-icon');
+        const contextText = document.getElementById('context-text');
+
+        const optionBtns = document.querySelectorAll('.option-btn');
+        const feedbackArea = document.getElementById('feedback-area');
+        const fbTitleText = document.getElementById('fb-title-text');
+        const fbBodyText = document.getElementById('fb-body-text');
+        const nextBtn = document.getElementById('next-btn');
+
+        // ==================== UTILIDADES ====================
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // ==================== INICIALIZAR JUEGO ====================
+        function initGame() {
+            const shuffled = shuffleArray([...SCENARIOS]);
+            state.scenarios = shuffled;
+            state.currentIndex = 0;
+            state.correct = 0;
+            state.wrong = 0;
+            state.score = 0;
+            state.totalAnswered = 0;
+            state.answered = false;
+            state.gameOver = false;
+            state.selectedOption = -1;
+
+            renderScenario(0);
+            updateStats();
+            closeModal();
+        }
+
+        // ==================== RENDER ESCENARIO ====================
+        function renderScenario(index) {
+            if (index >= state.scenarios.length) {
+                showResults();
+                return;
+            }
+
+            const scenario = state.scenarios[index];
+            scenarioTitle.textContent = `🔍 ${scenario.title}`;
+            scenarioNumber.textContent = `${index + 1}/${state.scenarios.length}`;
+            scenarioCounter.textContent = `${index + 1}/${state.scenarios.length}`;
+
+            contextIcon.textContent = scenario.icon;
+            contextText.innerHTML = scenario.context;
+
+            // Renderizar opciones
+            optionBtns.forEach((btn, i) => {
+                if (i < scenario.options.length) {
+                    btn.style.display = 'flex';
+                    btn.innerHTML = `
+                        <span class="option-icon">${i === 0 ? '🛡️' : i === 1 ? '⚠️' : i === 2 ? '🔒' : '🚨'}</span>
+                        ${scenario.options[i].label}
+                        <span class="option-label">${scenario.options[i].safe ? 'Seguro' : 'Riesgo'}</span>
+                    `;
+                    btn.className = 'option-btn';
+                    btn.disabled = false;
+                } else {
+                    btn.style.display = 'none';
+                }
+            });
+
+            // Resetear feedback
+            feedbackArea.className = '';
+            feedbackArea.classList.remove('visible');
+            nextBtn.classList.remove('visible');
+            state.answered = false;
+            state.selectedOption = -1;
+
+            // Scroll al área de juego en móvil
+            document.getElementById('game-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // ==================== SELECCIONAR OPCIÓN ====================
+        function selectOption(index) {
+            if (state.answered || state.gameOver) return;
+            if (index >= state.scenarios[state.currentIndex].options.length) return;
+
+            const scenario = state.scenarios[state.currentIndex];
+            const option = scenario.options[index];
+            const isCorrect = option.safe;
+
+            state.answered = true;
+            state.selectedOption = index;
+
+            // Deshabilitar botones
+            optionBtns.forEach(btn => btn.disabled = true);
+
+            // Marcar correcto/incorrecto
+            optionBtns.forEach((btn, i) => {
+                btn.classList.remove('correct', 'wrong');
+                if (i === index) {
+                    btn.classList.add(isCorrect ? 'correct' : 'wrong');
+                }
+                if (scenario.options[i].safe && i !== index) {
+                    btn.classList.add('reveal');
+                }
+            });
+
+            // Actualizar estadísticas
+            if (isCorrect) {
+                state.correct++;
+                const bonus = state.totalAnswered > 0 ? 10 : 0;
+                const points = 50 + bonus;
+                state.score += points;
+                showFeedback('success', '✅ ¡Correcto!', scenario.explanation, scenario.tip);
+            } else {
+                state.wrong++;
+                state.score = Math.max(0, state.score - 20);
+                showFeedback('error', '❌ Incorrecto', scenario.explanation, scenario.tip);
+            }
+
+            state.totalAnswered++;
+            updateStats();
+
+            // Mostrar botón siguiente
+            setTimeout(() => {
+                nextBtn.classList.add('visible');
+                if (state.currentIndex >= state.scenarios.length - 1) {
+                    nextBtn.textContent = '🏆 Ver resultados';
+                } else {
+                    nextBtn.textContent = '➡️ Siguiente escenario';
+                }
+            }, 500);
+        }
+
+        // ==================== MOSTRAR FEEDBACK ====================
+        function showFeedback(type, title, body, tip) {
+            feedbackArea.className = 'visible ' + type;
+            fbTitleText.textContent = title;
+            fbBodyText.innerHTML = `
+                ${body}
+                ${tip ? `<span class="tip">💡 ${tip}</span>` : ''}
+            `;
+        }
+
+        // ==================== SIGUIENTE ESCENARIO ====================
+        function nextScenario() {
+            state.currentIndex++;
+            if (state.currentIndex >= state.scenarios.length) {
+                showResults();
+            } else {
+                renderScenario(state.currentIndex);
+                // Scroll al área de juego
+                document.getElementById('game-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        // ==================== ACTUALIZAR ESTADÍSTICAS ====================
+        function updateStats() {
+            correctCount.textContent = state.correct;
+            wrongCount.textContent = state.wrong;
+            scoreDisplay.textContent = state.score;
+        }
+
+        // ==================== MOSTRAR RESULTADOS ====================
+        function showResults() {
+            const total = state.correct + state.wrong;
+            const percentage = total > 0 ? Math.round((state.correct / total) * 100) : 0;
+
+            let icon, title, grade, gradeClass;
+            if (percentage >= 90) {
+                icon = '🏆';
+                title = '¡Excelente! Eres un experto en seguridad';
+                grade = '🟢 Nivel Avanzado';
+                gradeClass = 'green';
+            } else if (percentage >= 70) {
+                icon = '⭐';
+                title = '¡Buen trabajo!';
+                grade = '🟡 Nivel Intermedio';
+                gradeClass = 'gold';
+            } else if (percentage >= 50) {
+                icon = '📚';
+                title = 'Necesitas más práctica';
+                grade = '🟠 Nivel Básico';
+                gradeClass = 'gold';
+            } else {
+                icon = '🔴';
+                title = '¡Cuidado! Debes mejorar tu seguridad';
+                grade = '🔴 Nivel Principiante';
+                gradeClass = 'red';
+            }
+
+            document.getElementById('modal-icon').textContent = icon;
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-subtitle').textContent =
+                `Completaste ${state.scenarios.length} escenarios de seguridad`;
+
+            document.getElementById('modal-correct').textContent = state.correct;
+            document.getElementById('modal-wrong').textContent = state.wrong;
+            document.getElementById('modal-score').textContent = state.score;
+
+            const gradeElement = document.getElementById('modal-grade');
+            gradeElement.textContent = grade;
+            gradeElement.style.color = percentage >= 90 ? '#00ff9d' : percentage >= 70 ? '#ffd93d' : '#ff6b6b';
+
+            document.getElementById('modal-overlay').classList.add('active');
+        }
+
+        // ==================== REINICIAR ====================
+        function resetGame() {
+            initGame();
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.remove('active');
+        }
+
+        // ==================== INICIO ====================
+        initGame();
+
+        console.log('🔐 PassGuard iniciado');
+        console.log('🛡️ Aprende a identificar técnicas de robo de contraseñas');
+        console.log('🎯 Objetivo: Identificar correctamente las acciones seguras');
+        console.log('💡 Consejos: Busca siempre la opción que protege tus credenciales');
+    </script>
+</body>
+</html>
